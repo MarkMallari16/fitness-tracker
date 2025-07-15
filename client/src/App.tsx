@@ -14,9 +14,12 @@ type WorkoutFormType = {
   load: number;
   reps: number;
 }
+type FormModeType = "add" | "update";
 function App() {
-  const modalAddRef = useRef<HTMLDialogElement | null>(null);
+  const modalRef = useRef<HTMLDialogElement | null>(null);
   const [workouts, setWorkouts] = useState<WorkoutType[] | undefined>(undefined);
+  const [formMode, setFormMode] = useState<FormModeType>();
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const [form, setForm] = useState<WorkoutFormType>({
     title: "",
@@ -24,7 +27,6 @@ function App() {
     reps: 1
   });
 
-  const volume = workouts?.reduce((sum, w) => sum + w.load * w.reps, 0) ?? 0;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -52,23 +54,47 @@ function App() {
   const submitAddModal = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:5000/api/workouts/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(form)
-      })
+      let response: Response;
+      let data;
+      if (formMode === "add") {
+        response = await fetch("http://localhost:5000/api/workouts/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(form)
+        })
 
-      if (!response.ok) {
-        throw new Error("Failed to create workout");
+        if (!response.ok) {
+          throw new Error("Failed to create workout");
+        }
+
+        data = await response.json();
+
+      } else {
+        response = await fetch(`http://localhost:5000/api/workouts/${editingId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(form)
+        })
+
+        if (!response.ok) {
+          throw new Error("Failed to create workout");
+        }
+
+        data = await response.json();
+
       }
 
-      const data = await response.json();
-      setWorkouts((prev) => (prev ? [data, ...prev] : [data]))
+      if (formMode === "add") {
+        setWorkouts((prev) => (prev ? [data, ...prev] : [data]))
+      } else {
+        setWorkouts(prev =>
+          prev?.map(w => w._id === editingId ? data : w)
+        )
+      }
       clearForm();
       closeModal();
-
     } catch (error) {
       console.error(error)
     }
@@ -82,13 +108,31 @@ function App() {
     })
   }
   const showAddModal = () => {
-    if (modalAddRef.current) {
-      modalAddRef.current?.showModal();
+    setFormMode("add");
+    setEditingId(null);
+    clearForm();
+    if (modalRef.current) {
+      modalRef.current?.showModal();
     }
   }
+  const showUpdateModal = (workout: WorkoutType) => {
+    setFormMode("update");
+    setEditingId(workout._id ?? null);
+
+    setForm({
+      title: workout.title,
+      load: workout.load,
+      reps: workout.reps
+    });
+
+    if (modalRef.current) {
+      modalRef.current.showModal();
+    }
+
+  }
   const closeModal = () => {
-    if (modalAddRef.current) {
-      modalAddRef.current?.close()
+    if (modalRef.current) {
+      modalRef.current?.close()
     }
   }
 
@@ -110,6 +154,7 @@ function App() {
   }
 
   const inputClassName: string = "input focus:border-black border-gray-400 bg-white placeholder:text-gray-400 text-black w-full mt-1"
+
   return (
     <div className='min-h-screen grid justify-center bg-blue-50 '>
       {/**
@@ -147,7 +192,7 @@ function App() {
             Add Workout
           </button>
         </div>
-        <dialog ref={modalAddRef} className="modal ">
+        <dialog ref={modalRef} className="modal ">
           <div className="modal-box bg-white">
             <form onSubmit={submitAddModal} method="dialog">
               <h3 className='text-black font-medium text-xl'>Add New Workout</h3>
@@ -178,7 +223,7 @@ function App() {
               <div className='flex justify-between'>
                 <h1 className='text-xl font-medium text-black'>{workout.title}</h1>
                 <div className='flex items-center gap-2'>
-                  <button className='p-2 hover:bg-gray-200 transition-all ease-in-out rounded-md cursor-pointer'>
+                  <button onClick={() => showUpdateModal(workout)} className='p-2 hover:bg-gray-200 transition-all ease-in-out rounded-md cursor-pointer'>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4 text-black">
                       <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
                     </svg>
@@ -201,7 +246,7 @@ function App() {
                     <p className='text-gray-600'>reps</p>
                   </div>
                   <div>
-                    <h3 className='text-2xl text-purple-500 font-bold'>{volume}</h3>
+                    <h3 className='text-2xl text-purple-500 font-bold'>{workout.reps * workout.load}</h3>
                     <p className='text-gray-600'>volume</p>
                   </div>
                 </div>

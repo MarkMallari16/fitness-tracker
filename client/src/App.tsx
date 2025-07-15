@@ -47,7 +47,7 @@ function App() {
   useEffect(() => {
     const fetchWorkouts = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/workouts/");
+        const response = await fetch(`http://localhost:5000/api/workouts/`);
         const data = await response.json();
 
         setWorkouts(data);

@@ -95,9 +95,11 @@ function App() {
       data = await response.json();
 
       if (formMode === "add") {
+        //this will add workout first then previous workout if empty it will add only the data
         setWorkouts((prev) => (prev ? [data, ...prev] : [data]))
       } else {
         setWorkouts(prev =>
+          //this will replace the updated data else it will keep the workout
           prev?.map(w => w._id === editingId ? data : w)
         )
       }
@@ -141,12 +143,14 @@ function App() {
     }
 
   }
+  //close modal
   const closeModal = () => {
     if (modalRef.current) {
       modalRef.current?.close()
     }
   }
 
+  //delete workout
   const deleteWorkout = async (id: string) => {
     try {
       const response = await fetch(`http://localhost:5000/api/workouts/${id}`, {
@@ -164,6 +168,7 @@ function App() {
     }
   }
 
+  //reuse class for input
   const inputClassName: string = "input focus:border-black border-gray-400 bg-white placeholder:text-gray-400 text-black w-full mt-1"
 
   return (

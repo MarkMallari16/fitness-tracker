@@ -14,6 +14,7 @@ type WorkoutFormType = {
   load: number;
   reps: number;
 }
+
 type FormModeType = "add" | "update";
 function App() {
   const modalRef = useRef<HTMLDialogElement | null>(null);
@@ -27,7 +28,11 @@ function App() {
     reps: 1
   });
 
+  const totalExercise = workouts?.length ?? 0;
+  const totalVolume = workouts?.reduce((sum, w) => sum + (w.load * w.reps), 0);
+  const averageVolumePerExercise = totalVolume;
 
+  //handle input
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
@@ -37,6 +42,7 @@ function App() {
     }));
   }
 
+  //fetch data from backend
   useEffect(() => {
     const fetchWorkouts = async () => {
       try {
@@ -51,6 +57,7 @@ function App() {
     fetchWorkouts();
   }, [])
 
+  //for add and update form
   const submitAddModal = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
@@ -69,7 +76,6 @@ function App() {
           throw new Error("Failed to create workout");
         }
 
-        data = await response.json();
 
       } else {
         response = await fetch(`http://localhost:5000/api/workouts/${editingId}`, {
@@ -82,9 +88,11 @@ function App() {
           throw new Error("Failed to create workout");
         }
 
-        data = await response.json();
 
       }
+
+      //response to backend
+      data = await response.json();
 
       if (formMode === "add") {
         setWorkouts((prev) => (prev ? [data, ...prev] : [data]))
@@ -99,7 +107,7 @@ function App() {
       console.error(error)
     }
   }
-
+  //clear the form
   const clearForm = () => {
     setForm({
       title: "",
@@ -107,6 +115,7 @@ function App() {
       reps: 1
     })
   }
+  //add modal
   const showAddModal = () => {
     setFormMode("add");
     setEditingId(null);
@@ -115,6 +124,8 @@ function App() {
       modalRef.current?.showModal();
     }
   }
+
+  //update modal
   const showUpdateModal = (workout: WorkoutType) => {
     setFormMode("update");
     setEditingId(workout._id ?? null);
@@ -171,15 +182,15 @@ function App() {
 
         <div className='mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-center'>
           <div className='bg-white px-8 py-4 rounded-md ring-1 ring-inset ring-gray-200'>
-            <h2 className='text-2xl font-bold text-blue-500'>2</h2>
+            <h2 className='text-2xl font-bold text-blue-500'>{totalExercise}</h2>
             <p className='text-gray-600'>Total Exercise</p>
           </div>
           <div className='bg-white px-8 py-4 rounded-md ring-1 ring-inset ring-gray-200'>
-            <h2 className='text-2xl font-bold text-green-500'>2</h2>
+            <h2 className='text-2xl font-bold text-green-500'>{totalVolume}</h2>
             <p className='text-gray-600'>Total Volume (lbs x reps)</p>
           </div>
           <div className='bg-white px-8 py-4 rounded-md ring-1 ring-inset ring-gray-200'>
-            <h2 className='text-2xl font-bold text-purple-500'>2</h2>
+            <h2 className='text-2xl font-bold text-purple-500'>{averageVolumePerExercise}</h2>
             <p className='text-gray-600'>Avg Volume per Exercise</p>
           </div>
         </div>

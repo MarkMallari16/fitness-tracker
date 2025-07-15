@@ -23,10 +23,7 @@ connectDb();
 
 
 //Enable cors
-app.use(cors({
-    origin: "https://track-your-fitness.netlify.app",
-    credentials: true
-}));
+app.use(cors());
 
 
 app.use("/api/workouts", workoutRoutes);

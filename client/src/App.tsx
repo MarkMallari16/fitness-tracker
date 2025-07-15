@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import './App.css'
+import { Dumbbell, LucideDumbbell } from 'lucide-react';
 
 interface WorkoutType {
   _id?: string
@@ -117,6 +118,7 @@ function App() {
       reps: 1
     })
   }
+
   //add modal
   const showAddModal = () => {
     setFormMode("add");
@@ -179,8 +181,9 @@ function App() {
       <div className='mt-20 w-full'>
         <div>
           <div className='flex justify-center items-center gap-1 text-center'>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-dumbbell-icon lucide-dumbbell text-primary size-10"><path d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z" /><path d="m2.5 21.5 1.4-1.4" /><path d="m20.1 3.9 1.4-1.4" /><path d="M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z" /><path d="m9.6 14.4 4.8-4.8" /></svg>
-            <h1 className='text-5xl font-bold text-black'>Fitness Tracker</h1>
+            <LucideDumbbell className='text-primary' size={40} />
+
+            <h1 className='text-5xl  text-black font-black'>Fitness Tracker</h1>
           </div>
           <p className='text-gray-600 text-lg text-center'>Track your workouts with load and reps</p>
         </div>
@@ -201,7 +204,7 @@ function App() {
         </div>
 
         <div className='mt-6'>
-          <button onClick={showAddModal} className='btn btn-primary cursor-pointer flex justify-center  items-center gap-1   text-white p-2 rounded-md w-full lg:w-48 font-medium '>
+          <button onClick={showAddModal} className='btn btn-primary cursor-pointer flex justify-center  items-center gap-1 text-white rounded-md w-full lg:w-48 font-medium '>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5 text-white">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
@@ -234,7 +237,7 @@ function App() {
           </div>
         </dialog>
         <div className='mt-6'>
-          {workouts && workouts?.map((workout) => (
+          {workouts && workouts.length > 0 ? workouts?.map((workout) => (
             <div key={workout._id} className='bg-white mb-4 px-8 py-6 rounded-md'>
               <div className='flex justify-between'>
                 <h1 className='text-xl font-medium text-black'>{workout.title}</h1>
@@ -271,7 +274,15 @@ function App() {
                 </div>
               </div>
             </div>
-          ))}
+          )) : (
+            <div className='bg-white p-5 rounded-md'>
+              <div className='flex flex-col justify-center items-center'>
+                <LucideDumbbell className='mb-2 text-gray-400' size={80} />
+                <h2 className='text-gray-500 font-medium'>No workouts yet</h2>
+                <p className='text-gray-400 '>Add your first workout to get started!</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
